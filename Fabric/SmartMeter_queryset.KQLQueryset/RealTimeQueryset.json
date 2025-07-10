@@ -1,0 +1,22 @@
+{
+  "queryset": {
+    "version": "1.0.0",
+    "dataSources": [
+      {
+        "id": "f84b8bac-269b-4a40-9052-5a3fe49b708f",
+        "clusterUri": "",
+        "type": "Fabric",
+        "databaseItemId": "fc21efda-d423-8140-4578-ae66b9466514",
+        "databaseItemName": "SmartMeter"
+      }
+    ],
+    "tabs": [
+      {
+        "id": "ecf2592d-0d01-4bfb-b9bc-2d942edb4156",
+        "content": "\n// This is sample code to create a table, load it with data and query the table\n\n.show cluster \n\n.set-or-append clusterhistory <| .show cluster\n\n\nclusterhistory\n\n\n\n",
+        "title": "Tab",
+        "dataSourceId": "f84b8bac-269b-4a40-9052-5a3fe49b708f"
+      }
+    ]
+  }
+}
