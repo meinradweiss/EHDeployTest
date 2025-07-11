@@ -1,0 +1,108 @@
+name: Deploy Fabric Artifacts and Rebind Eventstreams
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get Azure AD Token
+        id: get_token
+        run: |
+          TOKEN=$(curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+            -d "scope=https://api.fabric.microsoft.com/.default" \
+            -d "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -d "grant_type=client_credentials" \
+            "https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token" \
+            | jq -r .access_token)
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: List Source Stage Items
+        id: source_items
+        run: |
+          SOURCE_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.SOURCE_STAGE_ID }}/items" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Content-Type: application/json")
+          echo "source_items=$SOURCE_ITEMS" >> $GITHUB_OUTPUT
+
+      - name: Filter Deployable Items
+        id: filtered_items
+        run: |
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.items[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse") | {itemId: .itemId, itemType: .itemType}]')
+          echo "filtered_items=$FILTERED" >> $GITHUB_OUTPUT
+
+      - name: Deploy Selected Items
+        run: |
+          curl -X POST "https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deployments" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "stageId": "'"${{ secrets.DEST_STAGE_ID }}"'",
+              "items": '"${{ steps.filtered_items.outputs.filtered_items }}"'
+            }'
+
+      - name: List Destination Stage Items
+        id: dest_items
+        run: |
+          DEST_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.DEST_STAGE_ID }}/items" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Content-Type: application/json")
+          echo "dest_items=$DEST_ITEMS" >> $GITHUB_OUTPUT
+      - name: Rebind Eventstreams to Eventhouses
+        run: |
+          echo '${{ steps.source_items.outputs.source_items }}' > source.json
+          echo '${{ steps.dest_items.outputs.dest_items }}' > dest.json
+
+          jq -r '
+            def get_name_map:
+              .items | map({(.itemType + "_" + .name): .itemId}) | add;
+
+            def get_workspace_map:
+              .items | map({(.itemType + "_" + .name): .workspaceId}) | add;
+
+            get_name_map as $source_map |
+            get_workspace_map as $workspace_map |
+            input | get_name_map as $dest_map |
+            get_workspace_map as $dest_workspace_map |
+            .items[]
+            | select(.itemType == "Eventstream")
+            | {
+                name: .name,
+                source_id: .itemId,
+                dest_id: ($dest_map["Eventstream_" + .name]),
+                dest_workspace: ($dest_workspace_map["Eventstream_" + .name]),
+                eventhouse_id: ($dest_map["Eventhouse_" + .name]),
+                eventhouse_workspace: ($dest_workspace_map["Eventhouse_" + .name])
+              }
+          ' source.json dest.json > mapping.json
+
+          jq -c '.[]' mapping.json | while read item; do
+            NAME=$(echo $item | jq -r .name)
+            STREAM_ID=$(echo $item | jq -r .dest_id)
+            STREAM_WS=$(echo $item | jq -r .dest_workspace)
+            HOUSE_ID=$(echo $item | jq -r .eventhouse_id)
+            HOUSE_WS=$(echo $item | jq -r .eventhouse_workspace)
+
+            echo "Updating Eventstream $NAME in workspace $STREAM_WS to point to Eventhouse $HOUSE_ID"
+
+            curl -X POST "https://api.fabric.microsoft.com/v1/workspaces/$STREAM_WS/eventstreams/$STREAM_ID/updateDefinition?updateMetadata=true" \
+              -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "definition": {
+                  "parts": [
+                    {
+                      "path": "eventstream.json",
+                      "payload": "'$(echo "{\"destinations\":[{\"name\":\"Eventhouse\",\"type\":\"Eventhouse\",\"properties\":{\"workspaceId\":\"$HOUSE_WS\",\"itemId\":\"$HOUSE_ID\",\"tableName\":\"$NAME\"}}]}" | base64)'"
+                    }
+                  ]
+                }
+              }'
+          done
