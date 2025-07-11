@@ -32,6 +32,8 @@ jobs:
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
           echo "source_stages=$SOURCE_STAGES" >> $GITHUB_OUTPUT
+          echo "Value of SOURCE_STAGES is: $SOURCE_STAGES"
+
       
       
       - name: List Source Stage Items
