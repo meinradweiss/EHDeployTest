@@ -24,6 +24,16 @@ jobs:
             | jq -r .access_token)
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
+
+      - name: List Stages
+        id: source_stages
+        run: |
+          SOURCE_STAGES=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Content-Type: application/json")
+          echo "source_stages=$SOURCE_STAGES" >> $GITHUB_OUTPUT
+      
+      
       - name: List Source Stage Items
         id: source_items
         run: |
