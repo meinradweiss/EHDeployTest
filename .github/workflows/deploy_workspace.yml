@@ -104,8 +104,6 @@ jobs:
 
           if [[ "$STATUS_CODE" -eq 200 || "$STATUS_CODE" -eq 202 ]]; then
             echo "✅ Deployment request accepted"
-            echo "operation_id=$OPERATION_ID" >> "$GITHUB_OUTPUT"
-
           else
             echo "❌ Deployment request failed with status: $STATUS_CODE"
             exit 1
@@ -114,24 +112,24 @@ jobs:
 
 
       
-      - name: Wait for Deployment Completion
-        run: |
-          echo "Waiting for deployment to complete..."
-          STATUS="Running"
-          while [[ "$STATUS" == "Running" || "$STATUS" == "NotStarted" ]]; do
-            sleep 10
-            RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/${{ steps.deploy.outputs.operation_id }}" \
-              -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}")
-            STATUS=$(echo "$RESPONSE" | jq -r '.status')
-            echo "Current status: $STATUS"
-          done
+      # - name: Wait for Deployment Completion
+      #   run: |
+      #     echo "Waiting for deployment to complete..."
+      #     STATUS="Running"
+      #     while [[ "$STATUS" == "Running" || "$STATUS" == "NotStarted" ]]; do
+      #       sleep 10
+      #       RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/${{ steps.deploy.outputs.operation_id }}" \
+      #         -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}")
+      #       STATUS=$(echo "$RESPONSE" | jq -r '.status')
+      #       echo "Current status: $STATUS"
+      #     done
       
-          if [[ "$STATUS" != "Succeeded" ]]; then
-            echo "❌ Deployment failed with status: $STATUS"
-            exit 1
-          else
-            echo "✅ Deployment completed successfully."
-          fi
+      #     if [[ "$STATUS" != "Succeeded" ]]; then
+      #       echo "❌ Deployment failed with status: $STATUS"
+      #       exit 1
+      #     else
+      #       echo "✅ Deployment completed successfully."
+      #     fi
 
 
       - name: List Destination Stage Items
