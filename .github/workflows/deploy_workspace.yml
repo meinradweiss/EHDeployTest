@@ -60,7 +60,7 @@ jobs:
 
 
       - name: Deploy All Filtered Items to Target Stage
-        id: deploy_operation
+        id: deploy
         run: |
           echo "Preparing batch deployment..."
       
@@ -110,8 +110,7 @@ jobs:
             exit 1
           fi
           
-          echo "deploy_operation=$OPERATION_ID" >> "$GITHUB_OUTPUT"
-          echo "DEBUG: OPERATION_ID is '$OPERATION_ID'"
+          echo "operation_id=$OPERATION_ID" >> $GITHUB_OUTPUT
 
 
 
@@ -122,7 +121,7 @@ jobs:
           STATUS="Running"
           while [[ "$STATUS" == "Running" || "$STATUS" == "NotStarted" ]]; do
             sleep 10
-            RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/${{ steps.deploy.outputs.deploy_operation }}" \
+            RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/${{ steps.deploy_operation.outputs.operation_id }}" \
               -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}")
             STATUS=$(echo "$RESPONSE" | jq -r '.status')
             echo "Current status: $STATUS"
