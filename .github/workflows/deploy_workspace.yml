@@ -49,7 +49,7 @@ jobs:
       - name: Filter Deployable Items
         id: filtered_items
         run: |
-          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse" or .itemType == "KQLDatabase") | {itemId: .itemId, itemType: .itemType}]')
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse" or .itemType == "KQLDatabase" or .itemType == "KQLQueryset") | {itemId: .itemId, itemType: .itemType}]')
           {
             echo "filtered_items<<EOF"
             echo "$FILTERED"
@@ -72,12 +72,12 @@ jobs:
           DEPLOY_PAYLOAD=$(jq -n \
             --arg sourceStageId "${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}" \
             --arg targetStageId "${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}" \
-            --arg note "Batch deployment from GitHub Actions, no type filter" \
+            --arg note "Batch deployment from GitHub Actions, with items" \
             --argjson items "$ITEMS_JSON" \
             '{
               sourceStageId: $sourceStageId,
               targetStageId: $targetStageId,
-             # items: $items,
+              items: $items,
               note: $note
             }')
       
