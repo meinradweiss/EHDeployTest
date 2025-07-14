@@ -96,29 +96,7 @@ jobs:
           echo "$RESPONSE"
 
           
-          # Check response code
-          if [[ "$RESPONSE" -eq 200 || "$RESPONSE" -eq 202 ]]; then
-            echo "✅ Successfully triggered batch deployment"
-          else
-            echo "❌ Deployment failed. Status: $RESPONSE"
-            cat response.json
-            exit 1
-          fi
 
-          # My response code
-          echo "$RESPONSE" > deploy_response.txt
-          echo  "RESPONSE is: $RESPONSE"
-          
-          # Extract operation ID from headers
-          OPERATION_ID=$(grep -i "x-ms-operation-id" deploy_response.txt | awk '{print $2}' | tr -d '\r')
-          if [ -z "$OPERATION_ID" ]; then
-            echo "❌ Could not extract operationId from response headers."
-            cat deploy_response.txt
-            exit 1
-          fi
-
-          echo "🆔 Operation ID: $OPERATION_ID"
-          echo "operation_id=$OPERATION_ID" >> "$GITHUB_OUTPUT"
 
           
 
