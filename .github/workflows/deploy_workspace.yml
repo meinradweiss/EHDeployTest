@@ -110,7 +110,9 @@ jobs:
             exit 1
           fi
           
-          echo "deploy_operation=$OPERATION_ID" >> $GITHUB_OUTPUT
+          echo "deploy_operation=$OPERATION_ID" >> "$GITHUB_OUTPUT"
+          echo "DEBUG: OPERATION_ID is '$OPERATION_ID'"
+
 
 
       
