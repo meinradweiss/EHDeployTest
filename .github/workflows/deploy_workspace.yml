@@ -86,30 +86,36 @@ jobs:
           echo "$DEPLOY_PAYLOAD" | jq .
           
           # Send the deployment request
-          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
+          RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "$DEPLOY_PAYLOAD")
           
           # Check response code
-          if [[ "$RESPONSE_CODE" -eq 200 || "$RESPONSE_CODE" -eq 202 ]]; then
+          if [[ "$RESPONSE" -eq 200 || "$RESPONSE" -eq 202 ]]; then
             echo "✅ Successfully triggered batch deployment"
           else
-            echo "❌ Deployment failed. Status: $RESPONSE_CODE"
+            echo "❌ Deployment failed. Status: $RESPONSE"
             cat response.json
             exit 1
           fi
+
+          # My response code
+          echo "$RESPONSE" > deploy_response.txt
+          echo  "RESPONSE is: $RESPONSE"
           
-          # Extract operation ID
-          OPERATION_ID=$(jq -r '.operationId' response.json)
-          if [[ "$OPERATION_ID" == "null" || -z "$OPERATION_ID" ]]; then
-            echo "❌ Could not extract operationId."
-            cat response.json
+          # Extract operation ID from headers
+          OPERATION_ID=$(grep -i "x-ms-operation-id" deploy_response.txt | awk '{print $2}' | tr -d '\r')
+          if [ -z "$OPERATION_ID" ]; then
+            echo "❌ Could not extract operationId from response headers."
+            cat deploy_response.txt
             exit 1
           fi
-          
+
           echo "🆔 Operation ID: $OPERATION_ID"
           echo "operation_id=$OPERATION_ID" >> "$GITHUB_OUTPUT"
+
+          
 
 
       
