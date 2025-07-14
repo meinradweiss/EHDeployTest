@@ -59,15 +59,15 @@ jobs:
           
 
       - name: Deploy All Filtered Items to Target Stage
+        id: deploy
         run: |
           echo "Preparing batch deployment..."
       
-          # Extract only itemId fields for deployment
           ITEMS_JSON=$(echo '${{ steps.filtered_items.outputs.filtered_items }}' | jq '[.[] | {sourceItemId: .itemId, itemType: .itemType}]')
       
           echo "Items to deploy: $ITEMS_JSON"
       
-          RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
+          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -77,33 +77,61 @@ jobs:
                   \"note\": \"Batch deployment from GitHub Actions\"
                 }")
       
-          if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 202 ]; then
+          if [[ "$RESPONSE_CODE" -eq 200 || "$RESPONSE_CODE" -eq 202 ]]; then
             echo "✅ Successfully triggered batch deployment"
           else
-            echo "❌ Deployment failed. Status: $RESPONSE"
+            echo "❌ Deployment failed. Status: $RESPONSE_CODE"
             cat response.json
+            exit 1
           fi
+      
+          OPERATION_ID=$(jq -r '.operationId' response.json)
+          if [[ "$OPERATION_ID" == "null" || -z "$OPERATION_ID" ]]; then
+            echo "❌ Could not extract operationId."
+            cat response.json
+            exit 1
+          fi
+      
+          echo "🆔 Operation ID: $OPERATION_ID"
+          echo "operation_id=$OPERATION_ID" >> "$GITHUB_OUTPUT"
 
+
+      
       - name: Wait for Deployment Completion
         run: |
           echo "Waiting for deployment to complete..."
-
+      
+          OPERATION_ID="${{ steps.deploy.outputs.operation_id }}"
+          ACCESS_TOKEN="${{ steps.get_token.outputs.token }}"
+      
+          if [[ -z "$OPERATION_ID" || "$OPERATION_ID" == "null" ]]; then
+            echo "❌ OPERATION_ID is missing"
+            exit 1
+          fi
+      
           STATUS="Running"
           while [[ "$STATUS" == "Running" || "$STATUS" == "NotStarted" ]]; do
             sleep 10
             RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/$OPERATION_ID" \
               -H "Authorization: Bearer $ACCESS_TOKEN")
             STATUS=$(echo "$RESPONSE" | jq -r '.status')
+      
+            if [[ "$STATUS" == "null" || -z "$STATUS" ]]; then
+              echo "⚠️ No valid status found. Full response:"
+              echo "$RESPONSE" | jq .
+              exit 1
+            fi
+      
             echo "Current status: $STATUS"
           done
-          
+      
           if [[ "$STATUS" != "Succeeded" ]]; then
             echo "❌ Deployment failed with status: $STATUS"
+            echo "$RESPONSE" | jq .
             exit 1
           else
             echo "✅ Deployment completed successfully."
           fi
-
 
 
       - name: List Destination Stage Items
