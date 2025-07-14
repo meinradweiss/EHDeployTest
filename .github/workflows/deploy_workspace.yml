@@ -95,7 +95,8 @@ jobs:
           echo "📨 Full API Response:"
           cat full_response.txt
 
-          OPERATION_ID=$(grep -i "x-ms-operation-id" full_response.txt | awk '{print $2}' | tr -d '\r')
+          #OPERATION_ID=$(grep -i "x-ms-operation-id" full_response.txt | awk '{print $2}' | tr -d '\r')
+          OPERATION_ID=$(grep -i "^x-ms-operation-id:" full_response.txt | cut -d' ' -f2 | tr -d '\r')
           echo "🆔 Operation ID: $OPERATION_ID"
 
           STATUS_CODE=$(grep -oE 'HTTP/[0-9\.]+ [0-9]+' full_response.txt | awk '{print $2}')
