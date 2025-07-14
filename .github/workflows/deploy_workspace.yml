@@ -85,22 +85,20 @@ jobs:
           echo "$DEPLOY_PAYLOAD" | jq .
       
           # Send the deployment request and capture status code
-          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json \
-            -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
+          # Save full response (headers + body) to a file
+          curl -i -s -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
-            -d "$DEPLOY_PAYLOAD")
+            -d "$DEPLOY_PAYLOAD" > full_response.txt
+          
+          # Print the full response to the console
+          echo "📨 Full API Response:"
+          cat full_response.txt
+
+          OPERATION_ID=$(grep -i "x-ms-operation-id" full_response.txt | awk '{print $2}' | tr -d '\r')
+          echo "🆔 Operation ID: $OPERATION_ID"
+
       
-          echo "📨 Response body:"
-          cat response.json
-      
-          # Check response code
-          if [[ "$RESPONSE_CODE" -eq 200 || "$RESPONSE_CODE" -eq 202 ]]; then
-            echo "✅ Successfully triggered batch deployment"
-          else
-            echo "❌ Deployment failed. Status: $RESPONSE_CODE"
-            exit 1
-          fi
 
           
 
