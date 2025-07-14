@@ -75,8 +75,8 @@ jobs:
           
           # Construct the full request payload using jq -n to keep valid JSON
           DEPLOY_PAYLOAD=$(jq -n \
-            --arg sourceStageId "***" \
-            --arg targetStageId "***" \
+            --arg sourceStageId "${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}" \
+            --arg targetStageId "${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}" \
             --arg note "Batch deployment from GitHub Actions" \
             --argjson items "$ITEMS_JSON" \
             '{
