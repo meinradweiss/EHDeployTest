@@ -42,11 +42,7 @@ jobs:
           SOURCE_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}/items" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
-          {
-            echo "filtered_items<<EOF"
-            echo "$FILTERED"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          echo "source_items=$SOURCE_ITEMS" >> $GITHUB_OUTPUT
           echo "Value of SOURCE_ITEMS is: $SOURCE_ITEMS"
 
 
@@ -54,7 +50,11 @@ jobs:
         id: filtered_items
         run: |
           FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse") | {itemId: .itemId, itemType: .itemType}]')
-          echo "filtered_items=$FILTERED" >> $GITHUB_OUTPUT
+          {
+            echo "filtered_items<<EOF"
+            echo "$FILTERED"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
           echo "Value of FILTERED is: $FILTERED"
 
 
