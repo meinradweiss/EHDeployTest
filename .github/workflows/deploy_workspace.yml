@@ -48,7 +48,7 @@ jobs:
       - name: Filter Deployable Items
         id: filtered_items
         run: |
-          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.items[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse") | {itemId: .itemId, itemType: .itemType}]')
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse") | {itemId: .itemId, itemType: .itemType}]')
           echo "filtered_items=$FILTERED" >> $GITHUB_OUTPUT
           echo "Value of FILTERED is: $FILTERED"
 
