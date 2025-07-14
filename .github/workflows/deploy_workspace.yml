@@ -58,18 +58,17 @@ jobs:
           echo "Value of FILTERED is: $FILTERED"
           
 
+
       - name: Deploy All Filtered Items to Target Stage
         id: deploy
         run: |
           echo "Preparing batch deployment..."
-          
-          # Prepare the list of items to deploy (already JSON structure)
-          ITEMS_JSON=$(echo '${{ steps.filtered_items.outputs.filtered_items }}' | jq '[.[] | {sourceItemId: .itemId, itemType: .itemType}]')
       
-          
+          # Prepare the list of items to deploy
+          ITEMS_JSON=$(echo '${{ steps.filtered_items.outputs.filtered_items }}' | jq '[.[] | {sourceItemId: .itemId, itemType: .itemType}]')
           echo "Items to deploy: $ITEMS_JSON"
-          
-          # Construct the full request payload using jq -n to keep valid JSON
+      
+          # Construct the deployment payload
           DEPLOY_PAYLOAD=$(jq -n \
             --arg sourceStageId "${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}" \
             --arg targetStageId "${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}" \
@@ -81,32 +80,27 @@ jobs:
               items: $items,
               note: $note
             }')
-          
+      
           echo "Sending payload:"
           echo "$DEPLOY_PAYLOAD" | jq .
-          
-          # Send the deployment request
-          # RESPONSE=$(curl -i -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
-          # RESPONSE=$(curl -i -s -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
-          RESPONSE=$(curl -i -s -w "%{http_code}" -o response.json \
+      
+          # Send the deployment request and capture status code
+          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json \
             -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "$DEPLOY_PAYLOAD")
-
-          echo "📨 Full API Response:"
-          echo "$RESPONSE"
+      
+          echo "📨 Response body:"
           cat response.json
-          
+      
           # Check response code
           if [[ "$RESPONSE_CODE" -eq 200 || "$RESPONSE_CODE" -eq 202 ]]; then
-            echo "✅ Successfully triggered batch deployment"
+            echo "✅ Successfully triggered batch deployment"
           else
-            echo "❌ Deployment failed. Status: $RESPONSE_CODE"
-            exit 1
+            echo "❌ Deployment failed. Status: $RESPONSE_CODE"
+            exit 1
           fi
-
-
 
           
 
