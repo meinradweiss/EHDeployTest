@@ -121,7 +121,7 @@ jobs:
           STATUS="Running"
           while [[ "$STATUS" == "Running" || "$STATUS" == "NotStarted" ]]; do
             sleep 10
-            RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/${{ steps.deploy_operation.outputs.operation_id }}" \
+            RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/${{ steps.deploy.outputs.operation_id }}" \
               -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}")
             STATUS=$(echo "$RESPONSE" | jq -r '.status')
             echo "Current status: $STATUS"
