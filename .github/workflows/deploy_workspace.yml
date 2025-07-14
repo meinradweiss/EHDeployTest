@@ -56,7 +56,33 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
           echo "Value of FILTERED is: $FILTERED"
+          
 
+      - name: Deploy All Filtered Items to Target Stage
+        run: |
+          echo "Preparing batch deployment..."
+      
+          # Extract only itemId fields for deployment
+          ITEMS_JSON=$(echo '${{ steps.filtered_items.outputs.filtered_items }}' | jq '[.[] | {itemId: .itemId}]')
+      
+          echo "Items to deploy: $ITEMS_JSON"
+      
+          RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
+            -H "Authorization: Bearer ${{ secrets.FABRIC_ACCESS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+                  \"sourceStageId\": \"${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}\",
+                  \"targetStageId\": \"${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}\",
+                  \"items\": $ITEMS_JSON,
+                  \"note\": \"Batch deployment from GitHub Actions\"
+                }")
+      
+          if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 202 ]; then
+            echo "✅ Successfully triggered batch deployment"
+          else
+            echo "❌ Deployment failed. Status: $RESPONSE"
+            cat response.json
+          fi
 
 
       - name: Deploy Selected Items
