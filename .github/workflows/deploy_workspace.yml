@@ -98,8 +98,16 @@ jobs:
           OPERATION_ID=$(grep -i "x-ms-operation-id" full_response.txt | awk '{print $2}' | tr -d '\r')
           echo "🆔 Operation ID: $OPERATION_ID"
 
+          STATUS_CODE=$(grep -oE 'HTTP/[0-9\.]+ [0-9]+' full_response.txt | awk '{print $2}')
+          echo "🔍 HTTP Status Code: $STATUS_CODE"
       
 
+          if [[ "$STATUS_CODE" -eq 200 || "$STATUS_CODE" -eq 202 ]]; then
+            echo "✅ Deployment request accepted"
+          else
+            echo "❌ Deployment request failed with status: $STATUS_CODE"
+            exit 1
+          fi
           
 
 
@@ -107,34 +115,17 @@ jobs:
       - name: Wait for Deployment Completion
         run: |
           echo "Waiting for deployment to complete..."
-      
-          OPERATION_ID="${{ steps.deploy.outputs.operation_id }}"
-          ACCESS_TOKEN="${{ steps.get_token.outputs.token }}"
-      
-          if [[ -z "$OPERATION_ID" || "$OPERATION_ID" == "null" ]]; then
-            echo "❌ OPERATION_ID is missing"
-            exit 1
-          fi
-      
           STATUS="Running"
           while [[ "$STATUS" == "Running" || "$STATUS" == "NotStarted" ]]; do
             sleep 10
-            RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/$OPERATION_ID" \
-              -H "Authorization: Bearer ${{ steps.get_token.outputs.token }})
+            RESPONSE=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/operations/${{ steps.deploy.outputs.operation_id }}" \
+              -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}")
             STATUS=$(echo "$RESPONSE" | jq -r '.status')
-      
-            if [[ "$STATUS" == "null" || -z "$STATUS" ]]; then
-              echo "⚠️ No valid status found. Full response:"
-              echo "$RESPONSE" | jq .
-              exit 1
-            fi
-      
             echo "Current status: $STATUS"
           done
       
           if [[ "$STATUS" != "Succeeded" ]]; then
             echo "❌ Deployment failed with status: $STATUS"
-            echo "$RESPONSE" | jq .
             exit 1
           else
             echo "✅ Deployment completed successfully."
