@@ -84,7 +84,7 @@ jobs:
             cat response.json
           fi
 
-      - name: Wait for Deployment Completion  
+      - name: Wait for Deployment Completion
         run: |
           echo "Waiting for deployment to complete..."
           STATUS="Running"
@@ -95,6 +95,7 @@ jobs:
             STATUS=$(echo "$RESPONSE" | jq -r '.status')
             echo "Current status: $STATUS"
           done
+      
           if [[ "$STATUS" != "Succeeded" ]]; then
             echo "❌ Deployment failed with status: $STATUS"
             exit 1
