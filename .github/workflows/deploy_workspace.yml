@@ -96,7 +96,6 @@ jobs:
           cat full_response.txt
 
           OPERATION_ID=$(grep -i "x-ms-operation-id" full_response.txt | awk '{print $2}' | tr -d '\r')
-          echo "operation_id=$OPERATION_ID" >> $GITHUB_OUTPUT
           echo "🆔 Operation ID: $OPERATION_ID"
 
           STATUS_CODE=$(grep -oE 'HTTP/[0-9\.]+ [0-9]+' full_response.txt | awk '{print $2}')
@@ -105,6 +104,7 @@ jobs:
 
           if [[ "$STATUS_CODE" -eq 200 || "$STATUS_CODE" -eq 202 ]]; then
             echo "✅ Deployment request accepted"
+            echo "operation_id=$OPERATION_ID" >> $GITHUB_OUTPUT
           else
             echo "❌ Deployment request failed with status: $STATUS_CODE"
             exit 1
@@ -143,54 +143,54 @@ jobs:
           echo "Value of DESTINATION_ITEMS is: $DEST_ITEMS"
 
           
-      - name: Rebind Eventstreams to Eventhouses
-        run: |
-          echo '${{ steps.source_items.outputs.source_items }}' > source.json
-          echo '${{ steps.dest_items.outputs.dest_items }}' > dest.json
+      # - name: Rebind Eventstreams to Eventhouses
+      #   run: |
+      #     echo '${{ steps.source_items.outputs.source_items }}' > source.json
+      #     echo '${{ steps.dest_items.outputs.dest_items }}' > dest.json
 
-          jq -r '
-            def get_name_map:
-              .items | map({(.itemType + "_" + .name): .itemId}) | add;
+      #     jq -r '
+      #       def get_name_map:
+      #         .items | map({(.itemType + "_" + .name): .itemId}) | add;
 
-            def get_workspace_map:
-              .items | map({(.itemType + "_" + .name): .workspaceId}) | add;
+      #       def get_workspace_map:
+      #         .items | map({(.itemType + "_" + .name): .workspaceId}) | add;
 
-            get_name_map as $source_map |
-            get_workspace_map as $workspace_map |
-            input | get_name_map as $dest_map |
-            get_workspace_map as $dest_workspace_map |
-            .items[]
-            | select(.itemType == "Eventstream")
-            | {
-                name: .name,
-                source_id: .itemId,
-                dest_id: ($dest_map["Eventstream_" + .name]),
-                dest_workspace: ($dest_workspace_map["Eventstream_" + .name]),
-                eventhouse_id: ($dest_map["Eventhouse_" + .name]),
-                eventhouse_workspace: ($dest_workspace_map["Eventhouse_" + .name])
-              }
-          ' source.json dest.json > mapping.json
+      #       get_name_map as $source_map |
+      #       get_workspace_map as $workspace_map |
+      #       input | get_name_map as $dest_map |
+      #       get_workspace_map as $dest_workspace_map |
+      #       .items[]
+      #       | select(.itemType == "Eventstream")
+      #       | {
+      #           name: .name,
+      #           source_id: .itemId,
+      #           dest_id: ($dest_map["Eventstream_" + .name]),
+      #           dest_workspace: ($dest_workspace_map["Eventstream_" + .name]),
+      #           eventhouse_id: ($dest_map["Eventhouse_" + .name]),
+      #           eventhouse_workspace: ($dest_workspace_map["Eventhouse_" + .name])
+      #         }
+      #     ' source.json dest.json > mapping.json
 
-          jq -c '.[]' mapping.json | while read item; do
-            NAME=$(echo $item | jq -r .name)
-            STREAM_ID=$(echo $item | jq -r .dest_id)
-            STREAM_WS=$(echo $item | jq -r .dest_workspace)
-            HOUSE_ID=$(echo $item | jq -r .eventhouse_id)
-            HOUSE_WS=$(echo $item | jq -r .eventhouse_workspace)
+      #     jq -c '.[]' mapping.json | while read item; do
+      #       NAME=$(echo $item | jq -r .name)
+      #       STREAM_ID=$(echo $item | jq -r .dest_id)
+      #       STREAM_WS=$(echo $item | jq -r .dest_workspace)
+      #       HOUSE_ID=$(echo $item | jq -r .eventhouse_id)
+      #       HOUSE_WS=$(echo $item | jq -r .eventhouse_workspace)
 
-            echo "Updating Eventstream $NAME in workspace $STREAM_WS to point to Eventhouse $HOUSE_ID"
+      #       echo "Updating Eventstream $NAME in workspace $STREAM_WS to point to Eventhouse $HOUSE_ID"
 
-            curl -X POST "https://api.fabric.microsoft.com/v1/workspaces/$STREAM_WS/eventstreams/$STREAM_ID/updateDefinition?updateMetadata=true" \
-              -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "definition": {
-                  "parts": [
-                    {
-                      "path": "eventstream.json",
-                      "payload": "'$(echo "{\"destinations\":[{\"name\":\"Eventhouse\",\"type\":\"Eventhouse\",\"properties\":{\"workspaceId\":\"$HOUSE_WS\",\"itemId\":\"$HOUSE_ID\",\"tableName\":\"$NAME\"}}]}" | base64)'"
-                    }
-                  ]
-                }
-              }'
-          done
+      #       curl -X POST "https://api.fabric.microsoft.com/v1/workspaces/$STREAM_WS/eventstreams/$STREAM_ID/updateDefinition?updateMetadata=true" \
+      #         -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+      #         -H "Content-Type: application/json" \
+      #         -d '{
+      #           "definition": {
+      #             "parts": [
+      #               {
+      #                 "path": "eventstream.json",
+      #                 "payload": "'$(echo "{\"destinations\":[{\"name\":\"Eventhouse\",\"type\":\"Eventhouse\",\"properties\":{\"workspaceId\":\"$HOUSE_WS\",\"itemId\":\"$HOUSE_ID\",\"tableName\":\"$NAME\"}}]}" | base64)'"
+      #               }
+      #             ]
+      #           }
+      #         }'
+      #     done
