@@ -39,10 +39,11 @@ jobs:
       - name: List Source Stage Items
         id: source_items
         run: |
-          SOURCE_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.SOURCE_STAGE_ID }}/items" \
+          SOURCE_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.SOURCE_STAGE_ID }}/items" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
           echo "source_items=$SOURCE_ITEMS" >> $GITHUB_OUTPUT
+          echo "Value of SOURCE_ITEMS is: $SOURCE_ITEMS"
 
       - name: Filter Deployable Items
         id: filtered_items
