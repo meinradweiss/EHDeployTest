@@ -62,21 +62,40 @@ jobs:
         id: deploy
         run: |
           echo "Preparing batch deployment..."
-      
-          ITEMS_JSON=$(echo '${{ steps.filtered_items.outputs.filtered_items }}' | jq '[.[] | {sourceItemId: .itemId, itemType: .itemType}]')
-      
+          
+          # Prepare the list of items to deploy (already JSON structure)
+          ITEMS_JSON=$(echo '[
+            {
+              "itemId": "ff9e36c4-3fae-42b1-9297-828160d0bafe",
+              "itemType": "Eventhouse"
+            }
+          ]' | jq '[.[] | {sourceItemId: .itemId, itemType: .itemType}]')
+          
           echo "Items to deploy: $ITEMS_JSON"
-      
-          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
-            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+          
+          # Construct the full request payload using jq -n to keep valid JSON
+          DEPLOY_PAYLOAD=$(jq -n \
+            --arg sourceStageId "***" \
+            --arg targetStageId "***" \
+            --arg note "Batch deployment from GitHub Actions" \
+            --argjson items "$ITEMS_JSON" \
+            '{
+              sourceStageId: $sourceStageId,
+              targetStageId: $targetStageId,
+              items: $items,
+              note: $note
+            }')
+          
+          echo "Sending payload:"
+          echo "$DEPLOY_PAYLOAD" | jq .
+          
+          # Send the deployment request
+          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/***/deploy" \
+            -H "Authorization: Bearer ***" \
             -H "Content-Type: application/json" \
-            -d "{
-                  \"sourceStageId\": \"${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}\",
-                  \"targetStageId\": \"${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}\",
-                  \"items\": $ITEMS_JSON,
-                  \"note\": \"Batch deployment from GitHub Actions\"
-                }")
-      
+            -d "$DEPLOY_PAYLOAD")
+          
+          # Check response code
           if [[ "$RESPONSE_CODE" -eq 200 || "$RESPONSE_CODE" -eq 202 ]]; then
             echo "✅ Successfully triggered batch deployment"
           else
@@ -84,14 +103,15 @@ jobs:
             cat response.json
             exit 1
           fi
-      
+          
+          # Extract operation ID
           OPERATION_ID=$(jq -r '.operationId' response.json)
           if [[ "$OPERATION_ID" == "null" || -z "$OPERATION_ID" ]]; then
             echo "❌ Could not extract operationId."
             cat response.json
             exit 1
           fi
-      
+          
           echo "🆔 Operation ID: $OPERATION_ID"
           echo "operation_id=$OPERATION_ID" >> "$GITHUB_OUTPUT"
 
