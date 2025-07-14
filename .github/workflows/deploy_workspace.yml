@@ -104,7 +104,8 @@ jobs:
 
           if [[ "$STATUS_CODE" -eq 200 || "$STATUS_CODE" -eq 202 ]]; then
             echo "✅ Deployment request accepted"
-            echo "operation_id=$OPERATION_ID" >> $GITHUB_OUTPUT
+            echo "operation_id=$OPERATION_ID" >> "$GITHUB_OUTPUT"
+
           else
             echo "❌ Deployment request failed with status: $STATUS_CODE"
             exit 1
