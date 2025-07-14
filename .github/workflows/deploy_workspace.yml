@@ -85,23 +85,18 @@ jobs:
           fi
 
 
-      - name: Deploy Selected Items
-        run: |
-          curl -X POST "https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deployments" \
-            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "stageId": "'"${{ secrets.DEST_STAGE_ID }}"'",
-              "items": '"${{ steps.filtered_items.outputs.filtered_items }}"'
-            }'
+
 
       - name: List Destination Stage Items
         id: dest_items
         run: |
-          DEST_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/pipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.DEST_STAGE_ID }}/items" \
+          DEST_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}/items" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
           echo "dest_items=$DEST_ITEMS" >> $GITHUB_OUTPUT
+          echo "Value of DESTINATION_ITEMS is: $DEST_ITEMS"
+
+          
       - name: Rebind Eventstreams to Eventhouses
         run: |
           echo '${{ steps.source_items.outputs.source_items }}' > source.json
