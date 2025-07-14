@@ -91,7 +91,7 @@ jobs:
           
           # Send the deployment request
           RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/***/deploy" \
-            -H "Authorization: Bearer ***" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "$DEPLOY_PAYLOAD")
           
