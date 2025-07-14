@@ -64,12 +64,8 @@ jobs:
           echo "Preparing batch deployment..."
           
           # Prepare the list of items to deploy (already JSON structure)
-          ITEMS_JSON=$(echo '[
-            {
-              "itemId": "ff9e36c4-3fae-42b1-9297-828160d0bafe",
-              "itemType": "Eventhouse"
-            }
-          ]' | jq '[.[] | {sourceItemId: .itemId, itemType: .itemType}]')
+          ITEMS_JSON=$(echo '${{ steps.filtered_items.outputs.filtered_items }}' | jq '[.[] | {sourceItemId: .itemId, itemType: .itemType}]')
+      
           
           echo "Items to deploy: $ITEMS_JSON"
           
@@ -90,7 +86,7 @@ jobs:
           echo "$DEPLOY_PAYLOAD" | jq .
           
           # Send the deployment request
-          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/***/deploy" \
+          RESPONSE_CODE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "$DEPLOY_PAYLOAD")
