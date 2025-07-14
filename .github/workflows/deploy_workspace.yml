@@ -68,7 +68,7 @@ jobs:
           echo "Items to deploy: $ITEMS_JSON"
       
           RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
-            -H "Authorization: Bearer ${{ secrets.FABRIC_ACCESS_TOKEN }}" \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "{
                   \"sourceStageId\": \"${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}\",
