@@ -1,0 +1,45 @@
+{
+  "sources": [
+    {
+      "id": "7a084387-7f4b-47bd-b742-2d47c59c70dc",
+      "name": "CustomEndpoint-Source",
+      "type": "CustomEndpoint",
+      "properties": {}
+    }
+  ],
+  "destinations": [
+    {
+      "id": "ecc9512f-eb5f-4e2b-9eaf-b1ce27859f79",
+      "name": "SendToSmartMeterEH",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "DirectIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "fc21efda-d423-8140-4578-ae66b9466514",
+        "tableName": "eventStreamData",
+        "connectionName": "StreamDataToSmartMeterEH_SmartMeter-e",
+        "mappingRuleName": "eventStreamData_mapping"
+      },
+      "inputNodes": [
+        {
+          "name": "StreamDataToSmartMeterEH-stream"
+        }
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "8c3e6175-540c-4354-882c-45246b093031",
+      "name": "StreamDataToSmartMeterEH-stream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [
+        {
+          "name": "CustomEndpoint-Source"
+        }
+      ]
+    }
+  ],
+  "operators": [],
+  "compatibilityLevel": "1.0"
+}

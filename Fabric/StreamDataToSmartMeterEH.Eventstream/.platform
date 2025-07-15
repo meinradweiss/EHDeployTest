@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Eventstream",
+    "displayName": "StreamDataToSmartMeterEH"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a90c4218-5c0d-8d23-4ad5-45fb39bdac8d"
+  }
+}
