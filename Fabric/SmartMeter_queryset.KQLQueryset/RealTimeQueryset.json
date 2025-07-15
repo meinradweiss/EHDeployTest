@@ -16,6 +16,12 @@
         "content": "\n// This is sample code to create a table, load it with data and query the table\n\n.show cluster \n\n.set-or-append clusterhistory <| .show cluster\n\n\nclusterhistory\n\n\n\n",
         "title": "Tab",
         "dataSourceId": "f84b8bac-269b-4a40-9052-5a3fe49b708f"
+      },
+      {
+        "id": "4716ef0a-5246-411e-90fb-ee3d849eecb6",
+        "content": "// Use 'take' to view a sample number of records in the table and check the data.\neventStreamData\n| take 100\n| getschema \n\n| project EventProcessedUtcTime\n\n\n.show table eventStreamData ingestion mappings  \n\n[{\"column\":\"payload\",\"path\":\"$['payload']\",\"datatype\":\"\"},{\"column\":\"EventProcessedUtcTime\",\"path\":\"$.EventProcessedUtcTime\",\"datatype\":\"\"}]\n\n\n[{\"column\":\"payload\",\"path\":\"$['payload']\",\"datatype\":\"\"},{\"column\":\"EventProcessedUtcTime\",\"path\":\"$.EventProcessedUtcTime\",\"datatype\":\"\"}]",
+        "title": "",
+        "dataSourceId": "f84b8bac-269b-4a40-9052-5a3fe49b708f"
       }
     ]
   }

@@ -3,3 +3,8 @@
 
 
 .create-merge table clusterhistory (NodeId:string, Address:string, Name:string, StartTime:datetime, IsAdmin:bool, MachineTotalMemory:long, MachineAvailableMemory:long, ProcessorCount:int, EnvironmentDescription:string, ProductVersion:string, Reserved0:int) 
+.create-merge table eventStreamData (payload:dynamic, EventProcessedUtcTime:string) 
+.create-or-alter table eventStreamData ingestion json mapping 'eventStreamData_mapping'
+```
+[{"Properties":{"Path":"$['payload']"},"column":"payload","datatype":""},{"Properties":{"Path":"$.EventProcessedUtcTime"},"column":"EventProcessedUtcTime","datatype":""}]
+```
