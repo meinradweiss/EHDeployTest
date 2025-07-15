@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "dataSources": [
       {
-        "id": "a0033fdd-84e2-4522-b07b-da2679d98b48",
+        "id": "70eb5f2b-9376-41d0-86f8-22eb033e3aaf",
         "clusterUri": "https://trd-y5dvs6a60r5zsjms2t.z5.kusto.fabric.microsoft.com",
         "type": "AzureDataExplorer",
         "databaseName": "SmartMeter"
@@ -14,13 +14,12 @@
         "id": "0ae427ea-fa72-49c6-b65f-02fec6c49ca8",
         "content": "\n// Just query the table on first tab\n\n\nclusterhistory\n",
         "title": "",
-        "dataSourceId": "a0033fdd-84e2-4522-b07b-da2679d98b48"
+        "dataSourceId": "70eb5f2b-9376-41d0-86f8-22eb033e3aaf"
       },
       {
         "id": "09948f53-b266-4582-8df9-221be9eaf93b",
         "content": "\n// Just query the table on second tab\n\n\nclusterhistory\n",
-        "title": "",
-        "dataSourceId": "a0033fdd-84e2-4522-b07b-da2679d98b48"
+        "title": ""
       }
     ]
   }
