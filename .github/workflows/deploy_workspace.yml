@@ -28,7 +28,7 @@ jobs:
       - name: List Stages
         id: source_stages
         run: |
-          SOURCE_STAGES=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages" \
+          SOURCE_STAGES=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ vars.FABRIC_PIPELINE_ID }}/stages" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
           echo "source_stages=$SOURCE_STAGES" >> $GITHUB_OUTPUT
@@ -39,7 +39,7 @@ jobs:
       - name: List Source Stage Items
         id: source_items
         run: |
-          SOURCE_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}/items" \
+          SOURCE_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ vars.FABRIC_PIPELINE_ID }}/stages/${{ vars.FABRIC_DEVELOPMENT_STAGE_ID }}/items" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
           echo "source_items=$SOURCE_ITEMS" >> $GITHUB_OUTPUT
@@ -93,8 +93,8 @@ jobs:
       
           # Construct the deployment payload
           DEPLOY_PAYLOAD=$(jq -n \
-            --arg sourceStageId "${{ secrets.FABRIC_DEVELOPMENT_STAGE_ID }}" \
-            --arg targetStageId "${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}" \
+            --arg sourceStageId "${{ vars.FABRIC_DEVELOPMENT_STAGE_ID }}" \
+            --arg targetStageId "${{ vars.FABRIC_PRODUCTION_STAGE_ID }}" \
             --arg note "Batch deployment from GitHub Actions, with items" \
             --argjson items "$ITEMS_JSON" \
             '{
@@ -109,7 +109,7 @@ jobs:
       
           # Send the deployment request and capture status code
           # Save full response (headers + body) to a file
-          curl -i -s -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/deploy" \
+          curl -i -s -X POST "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ vars.FABRIC_PIPELINE_ID }}/deploy" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "$DEPLOY_PAYLOAD" > full_response.txt
@@ -161,7 +161,7 @@ jobs:
       - name: List Destination Stage Items
         id: dest_items
         run: |
-          DEST_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ secrets.FABRIC_PIPELINE_ID }}/stages/${{ secrets.FABRIC_PRODUCTION_STAGE_ID }}/items" \
+          DEST_ITEMS=$(curl -s -X GET "https://api.fabric.microsoft.com/v1/deploymentPipelines/${{ vars.FABRIC_PIPELINE_ID }}/stages/${{ vars.FABRIC_PRODUCTION_STAGE_ID }}/items" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
           echo "dest_items=$DEST_ITEMS" >> $GITHUB_OUTPUT
