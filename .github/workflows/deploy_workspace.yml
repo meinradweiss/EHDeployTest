@@ -46,10 +46,33 @@ jobs:
           echo "Value of SOURCE_ITEMS is: $SOURCE_ITEMS"
 
 
-      - name: Filter Deployable Items
+      # - name: Filter Deployable Items
+      #   id: filtered_items
+      #   run: |
+      #     FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse" or .itemType == "KQLDatabase" or .itemType == "KQLQueryset") | {itemId: .itemId, itemType: .itemType}]')
+      #     {
+      #       echo "filtered_items<<EOF"
+      #       echo "$FILTERED"
+      #       echo "EOF"
+      #     } >> "$GITHUB_OUTPUT"
+      #     echo "Value of FILTERED is: $FILTERED"
+
+      # - name: Filter Deployable Items
+      #   id: filtered_items
+      #   run: |
+      #     FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
+      #     {
+      #       echo "filtered_items<<eof"< p=""> </eof"<>
+      #       echo "$FILTERED"
+      #       echo "EOF"
+      #     } >> "$GITHUB_OUTPUT"
+      #     echo "Value of FILTERED is: $FILTERED"
+      
+
+      - name: Filter Deployable Items (Excluding Specific Types)
         id: filtered_items
         run: |
-          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType == "Notebook" or .itemType == "Lakehouse" or .itemType == "Eventstream" or .itemType == "Eventhouse" or .itemType == "KQLDatabase" or .itemType == "KQLQueryset") | {itemId: .itemId, itemType: .itemType}]')
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("XXX", "ZZZ") | not) | {itemId: .itemId, itemType: .itemType}]')
           {
             echo "filtered_items<<EOF"
             echo "$FILTERED"
