@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "KQLQueryset",
+    "displayName": "SmartMeter_queryset1",
+    "description": "SmartMeter_queryset1"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8a37c58f-2b53-88b9-499c-39aa753bceab"
+  }
+}

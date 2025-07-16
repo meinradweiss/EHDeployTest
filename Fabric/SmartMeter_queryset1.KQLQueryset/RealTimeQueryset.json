@@ -1,0 +1,22 @@
+{
+  "queryset": {
+    "version": "1.0.0",
+    "dataSources": [
+      {
+        "id": "ca6bf83a-4a40-4cfc-882d-0eb083d01ce4",
+        "clusterUri": "",
+        "type": "Fabric",
+        "databaseItemId": "fc21efda-d423-8140-4578-ae66b9466514",
+        "databaseItemName": "SmartMeter"
+      }
+    ],
+    "tabs": [
+      {
+        "id": "118fa0c6-fab2-4d5a-923e-18bcebd2748b",
+        "content": "//***********************************************************************************************************\n// Here are two articles to help you get started with KQL:\n// KQL reference guide - https://aka.ms/KQLguide\n// SQL - KQL conversions - https://aka.ms/sqlcheatsheet\n//***********************************************************************************************************\n\n// Use \"take\" to view a sample number of records in the table and check the data.\nYOUR_TABLE_HERE\n| take 100\n\n// See how many records are in the table.\nYOUR_TABLE_HERE\n| count\n\n// This query returns the number of ingestions per hour in the given table.\nYOUR_TABLE_HERE\n| summarize IngestionCount = count() by bin(ingestion_time(), 1h)\n\nclusterhistory\n",
+        "title": "Tab",
+        "dataSourceId": "ca6bf83a-4a40-4cfc-882d-0eb083d01ce4"
+      }
+    ]
+  }
+}
