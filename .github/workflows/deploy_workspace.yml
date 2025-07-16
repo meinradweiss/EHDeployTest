@@ -62,8 +62,8 @@ jobs:
       - name: Filter Deployable Items
         id: filtered_items
         run: |
-          # FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
-          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook","KQLDatabase")) | {itemId: .itemId, itemType: .itemType}]')
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
+          # FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook","KQLDatabase")) | {itemId: .itemId, itemType: .itemType}]')
           {
             echo "filtered_items<<EOF"
             echo "$FILTERED"
