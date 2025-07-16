@@ -103,7 +103,7 @@ jobs:
             '{
               sourceStageId: $sourceStageId,
               targetStageId: $targetStageId,
-              items: $items,
+              # items: $items,
               note: $note
             }')
       
