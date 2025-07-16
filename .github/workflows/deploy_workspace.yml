@@ -63,7 +63,7 @@ jobs:
         id: filtered_items
         run: |
           # FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
-          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook","KQLDatabase","Eventstream")) | {itemId: .itemId, itemType: .itemType}]')
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook","KQLDatabase","KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
           {
             echo "filtered_items<<EOF"
             echo "$FILTERED"
