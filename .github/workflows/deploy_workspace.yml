@@ -43,7 +43,6 @@ jobs:
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json")
           echo "source_items=$SOURCE_ITEMS" >> $GITHUB_OUTPUT
-          echo "Value of SOURCE_ITEMS is: $SOURCE_ITEMS"
           echo "$SOURCE_ITEMS" > source_items.json
           cat source_items.json
 
@@ -64,7 +63,7 @@ jobs:
         id: filtered_items
         run: |
           # FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
-          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook")) | {itemId: .itemId, itemType: .itemType}]')
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook","KQLDatabase")) | {itemId: .itemId, itemType: .itemType}]')
           {
             echo "filtered_items<<EOF"
             echo "$FILTERED"
