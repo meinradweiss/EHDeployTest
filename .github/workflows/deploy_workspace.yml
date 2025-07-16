@@ -45,7 +45,7 @@ jobs:
           echo "source_items=$SOURCE_ITEMS" >> $GITHUB_OUTPUT
           echo "Value of SOURCE_ITEMS is: $SOURCE_ITEMS"
           echo "$SOURCE_ITEMS" > source_items.json
-          cat source_stages.json
+          cat source_items.json
 
 
 
