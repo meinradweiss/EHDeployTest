@@ -63,7 +63,7 @@ jobs:
           # FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
           FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook")) | {itemId: .itemId, itemType: .itemType}]')
           {
-            echo "filtered_items<<eof"< p=""> </eof"<>
+            echo "filtered_items<<EOF"
             echo "$FILTERED"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
