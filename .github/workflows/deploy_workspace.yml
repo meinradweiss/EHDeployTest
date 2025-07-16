@@ -95,12 +95,12 @@ jobs:
           DEPLOY_PAYLOAD=$(jq -n \
             --arg sourceStageId "${{ vars.FABRIC_DEVELOPMENT_STAGE_ID }}" \
             --arg targetStageId "${{ vars.FABRIC_PRODUCTION_STAGE_ID }}" \
-            --arg note "Batch deployment from GitHub Actions, no items" \
+            --arg note "Batch deployment from GitHub Actions,  items" \
             --argjson items "$ITEMS_JSON" \
             '{
               sourceStageId: $sourceStageId,
               targetStageId: $targetStageId,
-          #    items: $items,
+              items: $items,
               note: $note
             }')
       
