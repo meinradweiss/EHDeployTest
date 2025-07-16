@@ -59,29 +59,29 @@ jobs:
       #     } >> "$GITHUB_OUTPUT"
       #     echo "Value of FILTERED is: $FILTERED"
 
-      - name: Filter Deployable Items
-        id: filtered_items
-        run: |
-          # FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
-          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook","KQLDatabase","KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
-          {
-            echo "filtered_items<<EOF"
-            echo "$FILTERED"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "Value of FILTERED is: $FILTERED"
-      
-
-      # - name: Filter Deployable Items (Excluding Specific Types)
+      # - name: Filter Deployable Items
       #   id: filtered_items
       #   run: |
-      #     FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("XXX", "ZZZ") | not) | {itemId: .itemId, itemType: .itemType}]')
+      #     # FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook", "Lakehouse", "Eventstream", "Eventhouse", "KQLDatabase", "KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
+      #     FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Notebook","KQLDatabase","KQLQueryset")) | {itemId: .itemId, itemType: .itemType}]')
       #     {
       #       echo "filtered_items<<EOF"
       #       echo "$FILTERED"
       #       echo "EOF"
       #     } >> "$GITHUB_OUTPUT"
       #     echo "Value of FILTERED is: $FILTERED"
+      
+
+      - name: Filter Deployable Items (Excluding Specific Types)
+        id: filtered_items
+        run: |
+          FILTERED=$(echo '${{ steps.source_items.outputs.source_items }}' | jq '[.value[] | select(.itemType | IN("Eventstream") | not) | {itemId: .itemId, itemType: .itemType}]')
+          {
+            echo "filtered_items<<EOF"
+            echo "$FILTERED"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Value of FILTERED is: $FILTERED"
           
 
 
